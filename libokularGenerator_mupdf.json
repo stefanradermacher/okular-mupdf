@@ -1,0 +1,20 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Stefan Radermacher"
+            }
+        ],
+        "Copyright": "© 2026 Stefan Radermacher",
+        "Description": "A PDF backend based on MuPDF",
+        "License": "GPL",
+        "MimeTypes": [
+            "application/pdf",
+            "application/x-pdf"
+        ],
+        "Name": "MuPDF Backend",
+        "Version": "0.1.0"
+    },
+    "X-KDE-Priority": 3,
+    "X-KDE-okularAPIVersion": 1
+}
