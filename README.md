@@ -1,37 +1,44 @@
 # okular-mupdf
 
-Ein zusätzliches Okular-Backend (Generator-Plugin) für PDF-Dokumente, das
-MuPDF statt Poppler zum Rendern benutzt. Es meldet sich für `application/pdf`
-mit `X-KDE-Priority: 3` an und wird damit vor Poppler (Priorität 1) gewählt.
+An additional Okular backend (generator plugin) for PDF documents that renders
+with MuPDF instead of Poppler. It registers for `application/pdf` with
+`X-KDE-Priority: 3` and is therefore preferred over Poppler (priority 1).
 
 ## Gentoo
 
-Ebuild im Overlay https://github.com/stefanradermacher/gentoo-overlay:
+The ebuild lives in the overlay https://github.com/stefanradermacher/gentoo-overlay:
 
     eselect repository add stefanradermacher git https://github.com/stefanradermacher/gentoo-overlay.git
     emerge --sync stefanradermacher
     emerge -av kde-apps/okular-mupdf
 
-## Manuell bauen und installieren
+## Building and installing manually
 
     cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/usr
     cmake --build build
-    sudo cmake --install build        # nach /usr/lib64/qt6/plugins/okular_generators/
+    sudo cmake --install build        # installs to /usr/lib64/qt6/plugins/okular_generators/
 
-Okular danach neu starten. Das Plugin muss zur installierten Okular-Version
-passen (ABI) und nach Okular-Updates neu gebaut werden.
+Restart Okular afterwards. The plugin has to match the installed Okular
+version (ABI) and must be rebuilt after Okular updates. If it no longer loads,
+Okular silently falls back to Poppler.
 
-## Backend wählen
+## Choosing the backend
 
-* Standardmäßig gewinnt MuPDF (höhere Priorität).
-* Zurück zu Poppler: in `libokularGenerator_mupdf.json` die Priorität unter 1 setzen
-  und neu bauen, oder das Plugin entfernen.
-* Pro Öffnen wählen: Okular, Einstellungen → Okular einrichten → Allgemein →
-  "Beim Öffnen von Dateien nach dem Backend fragen" (`chooseGenerators`).
+* By default MuPDF wins because of its higher priority.
+* Back to Poppler: set the priority in `libokularGenerator_mupdf.json` below 1
+  and rebuild, or remove the plugin.
+* Choose per file: Okular, Settings → Configure Okular → General →
+  "Ask for the backend when opening files" (`chooseGenerators`).
 
-## Funktionsumfang
+## Features
 
-Rendern (Kacheln, Zoom, Rotation), Textextraktion/Suche/Markieren, Links
-(intern/URL), Inhaltsverzeichnis, Dokumentinfo, Passwortabfrage.
-Nicht enthalten: Annotationen bearbeiten, Formulare ausfüllen, Signaturen,
-Drucken über das Backend, Ebenen, Schriftinfo, Medien.
+Rendering (tiles, zoom, rotation), text extraction/search/selection, links
+(internal/URL), table of contents, document info, password prompt.
+
+Not implemented: editing annotations, filling in forms, signatures, printing
+through the backend, layers, font info, media. Annotations and form fields are
+displayed, though.
+
+## License
+
+GPL-2.0-or-later, see `LICENSE`.
