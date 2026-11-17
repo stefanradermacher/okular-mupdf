@@ -15,7 +15,9 @@
 #include <KPluginFactory>
 
 #include <QDateTime>
+#ifndef OKULAR_MUPDF_NEW_SYNOPSIS
 #include <QDomElement>
+#endif
 #include <QFile>
 #include <QLocale>
 #include <QLoggingCategory>
@@ -711,6 +713,45 @@ Okular::DocumentInfo MuPdfGenerator::generateDocumentInfo(const QSet<Okular::Doc
     return info;
 }
 
+#ifdef OKULAR_MUPDF_NEW_SYNOPSIS
+// Okular >= 26.11.80: DocumentSynopsis is built from immutable elements, so
+// the children have to exist before their parent is created.
+QVector<Okular::DocumentSynopsis::Element> MuPdfGenerator::buildSynopsis(fz_outline *outline, int depth)
+{
+    QVector<Okular::DocumentSynopsis::Element> result;
+    if (depth > 64) { // guard against malicious/cyclic outlines
+        return result;
+    }
+    for (fz_outline *o = outline; o; o = o->next) {
+        Okular::DocumentSynopsis::ElementBuilder builder(QString::fromUtf8(o->title ? o->title : ""));
+
+        int pageNumber = -1;
+        bool hasPos = false;
+        float x = 0;
+        float y = 0;
+        if (o->uri && !fz_is_external_link(m_ctx, o->uri)) {
+            if (!resolveLinkDest(m_ctx, m_doc, o->uri, &pageNumber, &hasPos, &x, &y)) {
+                pageNumber = -1;
+            }
+        }
+        if (pageNumber >= 0 && pageNumber < m_pageBounds.size()) {
+            builder.setViewPort(viewportFor(pageNumber, hasPos, x, y, m_pageBounds.at(pageNumber)));
+        } else if (o->uri && fz_is_external_link(m_ctx, o->uri)) {
+            builder.setUrl(QString::fromUtf8(o->uri));
+        }
+        builder.setOpen(o->is_open);
+
+        if (o->down) {
+            const auto children = buildSynopsis(o->down, depth + 1);
+            for (const auto &child : children) {
+                builder.addChild(child);
+            }
+        }
+        result.append(Okular::DocumentSynopsis::Element(builder));
+    }
+    return result;
+}
+#else
 void MuPdfGenerator::fillSynopsis(QDomNode &parent, fz_outline *outline, int depth)
 {
     if (depth > 64) { // guard against malicious/cyclic outlines
@@ -741,6 +782,7 @@ void MuPdfGenerator::fillSynopsis(QDomNode &parent, fz_outline *outline, int dep
         }
     }
 }
+#endif
 
 const Okular::DocumentSynopsis *MuPdfGenerator::generateDocumentSynopsis()
 {
@@ -766,8 +808,15 @@ const Okular::DocumentSynopsis *MuPdfGenerator::generateDocumentSynopsis()
     }
 
     m_synopsis = new Okular::DocumentSynopsis;
+#ifdef OKULAR_MUPDF_NEW_SYNOPSIS
+    const auto elements = buildSynopsis(outline, 0);
+    for (const auto &element : elements) {
+        m_synopsis->addChild(element);
+    }
+#else
     QDomNode root = *m_synopsis;
     fillSynopsis(root, outline, 0);
+#endif
     fz_drop_outline(m_ctx, outline);
     return m_synopsis;
 }

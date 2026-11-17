@@ -30,6 +30,15 @@ kcoreaddons_add_plugin(okularGenerator_mupdf
     SOURCES generator_mupdf.cpp)
 
 target_include_directories(okularGenerator_mupdf PRIVATE ${KDE_INSTALL_FULL_INCLUDEDIR}/okular)
+# Okular >= 26.11.80 replaced the QDomDocument based DocumentSynopsis by an
+# ElementBuilder API. Detect which one the installed headers provide.
+file(READ "${KDE_INSTALL_FULL_INCLUDEDIR}/okular/core/document.h" OKULAR_DOCUMENT_H)
+string(FIND "${OKULAR_DOCUMENT_H}" "class ElementBuilder" OKULAR_HAS_ELEMENT_BUILDER)
+if(NOT OKULAR_HAS_ELEMENT_BUILDER EQUAL -1)
+    message(STATUS "Okular provides DocumentSynopsis::ElementBuilder")
+    target_compile_definitions(okularGenerator_mupdf PRIVATE OKULAR_MUPDF_NEW_SYNOPSIS)
+endif()
+
 target_link_libraries(okularGenerator_mupdf
     Okular::Core
     KF6::CoreAddons

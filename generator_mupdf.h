@@ -11,6 +11,7 @@
 #include <core/generator.h>
 
 #include <QDomNode>
+#include <QVector>
 #include <QImage>
 #include <QList>
 #include <QMutex>
@@ -48,7 +49,11 @@ private:
     void closeInternal();
     Okular::Document::OpenResult finishOpen(QList<Okular::Page *> &pagesVector, const QString &password);
     QList<Okular::ObjectRect *> generateLinks(fz_page *page, int pageNumber);
+#ifdef OKULAR_MUPDF_NEW_SYNOPSIS
+    QVector<Okular::DocumentSynopsis::Element> buildSynopsis(fz_outline *outline, int depth);
+#else
     void fillSynopsis(QDomNode &parent, fz_outline *outline, int depth);
+#endif
 
     // A MuPDF context must never be used by two threads at once. Okular
     // renders on worker threads, so everything touching m_ctx/m_doc is
