@@ -58,6 +58,7 @@ struct PageInfo {
 fz_document *openDocument(fz_context *ctx, const char *path)
 {
     fz_document *doc = nullptr;
+    fz_var(doc);
     fz_try(ctx)
     {
         doc = fz_open_document(ctx, path);
@@ -72,6 +73,7 @@ fz_document *openDocument(fz_context *ctx, const char *path)
 fz_document *openDocumentFromMemory(fz_context *ctx, const unsigned char *data, size_t size)
 {
     fz_document *doc = nullptr;
+    fz_var(doc);
     fz_buffer *buf = nullptr;
     fz_stream *stm = nullptr;
     fz_var(buf);
@@ -97,6 +99,7 @@ fz_document *openDocumentFromMemory(fz_context *ctx, const unsigned char *data, 
 int countPages(fz_context *ctx, fz_document *doc)
 {
     int n = -1;
+    fz_var(n);
     fz_try(ctx)
     {
         n = fz_count_pages(ctx, doc);
@@ -112,6 +115,7 @@ bool pageBounds(fz_context *ctx, fz_document *doc, int number, fz_rect *out)
 {
     fz_page *page = nullptr;
     bool ok = true;
+    fz_var(ok);
     fz_var(page);
     fz_try(ctx)
     {
@@ -134,6 +138,7 @@ bool renderPage(fz_context *ctx, fz_page *page, fz_matrix ctm, QImage &image)
     fz_pixmap *pix = nullptr;
     fz_device *dev = nullptr;
     bool ok = true;
+    fz_var(ok);
     fz_var(pix);
     fz_var(dev);
     fz_try(ctx)
@@ -179,6 +184,7 @@ struct ResolvedLink {
 bool resolveLinkDest(fz_context *ctx, fz_document *doc, const char *uri, int *pageNumber, bool *hasPos, float *x, float *y)
 {
     bool ok = true;
+    fz_var(ok);
     fz_try(ctx)
     {
         const fz_link_dest dest = fz_resolve_link_dest(ctx, doc, uri);
@@ -232,6 +238,7 @@ bool MuPdfGenerator::ensureContext()
     fz_set_error_callback(m_ctx, errorCallback, nullptr);
 
     bool ok = true;
+    fz_var(ok);
     fz_try(m_ctx)
     {
         fz_register_document_handlers(m_ctx);
@@ -266,6 +273,7 @@ Okular::Document::OpenResult MuPdfGenerator::finishOpen(QList<Okular::Page *> &p
     }
 
     bool needsPassword = false;
+    fz_var(needsPassword);
     fz_try(m_ctx)
     {
         needsPassword = fz_needs_password(m_ctx, m_doc);
@@ -278,6 +286,7 @@ Okular::Document::OpenResult MuPdfGenerator::finishOpen(QList<Okular::Page *> &p
 
     if (needsPassword) {
         bool authenticated = false;
+        fz_var(authenticated);
         if (!password.isEmpty()) {
             const QByteArray pw = password.toUtf8();
             fz_try(m_ctx)
@@ -384,6 +393,7 @@ QList<Okular::ObjectRect *> MuPdfGenerator::generateLinks(fz_page *page, int pag
     // 1. collect the raw data (plain C, guarded)
     QList<ResolvedLink> links;
     fz_link *head = nullptr;
+    fz_var(head);
     fz_try(m_ctx)
     {
         head = fz_load_links(m_ctx, page);
@@ -471,7 +481,9 @@ QImage MuPdfGenerator::image(Okular::PixmapRequest *request)
     }
 
     fz_page *page = nullptr;
+    fz_var(page);
     bool ok = true;
+    fz_var(ok);
     fz_try(m_ctx)
     {
         page = fz_load_page(m_ctx, m_doc, number);
@@ -570,6 +582,7 @@ void collectWords(fz_stext_block *first, QList<TextWord> &out)
 fz_stext_page *buildStextPage(fz_context *ctx, fz_page *page)
 {
     fz_stext_page *tp = nullptr;
+    fz_var(tp);
     fz_try(ctx)
     {
         fz_stext_options opts = {};
@@ -593,7 +606,9 @@ Okular::TextPage *MuPdfGenerator::textPage(Okular::TextRequest *request)
     }
 
     fz_page *page = nullptr;
+    fz_var(page);
     bool ok = true;
+    fz_var(ok);
     fz_try(m_ctx)
     {
         page = fz_load_page(m_ctx, m_doc, number);
@@ -642,6 +657,7 @@ static QString metadata(fz_context *ctx, fz_document *doc, const char *key)
 {
     char buf[1024];
     int n = -1;
+    fz_var(n);
     fz_try(ctx)
     {
         n = fz_lookup_metadata(ctx, doc, key, buf, sizeof buf);
@@ -795,6 +811,7 @@ const Okular::DocumentSynopsis *MuPdfGenerator::generateDocumentSynopsis()
     }
 
     fz_outline *outline = nullptr;
+    fz_var(outline);
     fz_try(m_ctx)
     {
         outline = fz_load_outline(m_ctx, m_doc);
